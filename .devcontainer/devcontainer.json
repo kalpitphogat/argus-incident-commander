@@ -1,0 +1,23 @@
+{
+  // GitHub Codespaces / VS Code Dev Containers: installs Argus and starts the web UI on port 8000.
+  "name": "Argus · AI Incident Commander",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
+  "postCreateCommand": "pip install --upgrade pip && pip install -e '.[dev]'",
+  "postAttachCommand": "argus serve --host 0.0.0.0 --port 8000",
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": { "label": "Argus UI", "onAutoForward": "openBrowser" }
+  },
+  "secrets": {
+    "ANTHROPIC_API_KEY": {
+      "description": "Optional. With a key, Argus reasons with Claude; without one it uses its offline reasoner."
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python"],
+      "settings": { "python.testing.pytestEnabled": true, "python.testing.pytestArgs": ["tests"] }
+    },
+    "codespaces": { "openFiles": ["README.md"] }
+  }
+}

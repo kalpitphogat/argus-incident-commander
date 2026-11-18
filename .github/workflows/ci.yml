@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests · Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Tests (simulator, agent, HITL, resume, API, LLM path via mock API, demo export)
+        run: pytest -q
+      - name: Chaos evaluation (50 random, unseen incidents)
+        run: argus eval --n 50 --start 500 --strict
+
+  docker:
+    name: Docker image · build + smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build
+        run: docker build -t argus:ci .
+      - name: Smoke test (resolve an incident inside the container)
+        run: |
+          docker run -d --name argus -p 8000:8000 argus:ci
+          for i in $(seq 1 30); do curl -fsS localhost:8000/api/health && break; sleep 1; done
+          id=$(curl -fsS -X POST localhost:8000/api/incidents -H 'Content-Type: application/json' \
+                 -d '{"scenario":"auth-cert-expiry","reasoning":"deterministic","approval_policy":"never"}' \
+               | python3 -c 'import json,sys; print(json.load(sys.stdin)["incident_id"])')
+          for i in $(seq 1 60); do
+            status=$(curl -fsS "localhost:8000/api/incidents/$id" | python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])')
+            echo "$id: $status"
+            [ "$status" = "resolved" ] && exit 0
+            sleep 1
+          done
+          docker logs argus
+          exit 1
