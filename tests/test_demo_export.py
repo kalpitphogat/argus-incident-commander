@@ -17,6 +17,8 @@ async def test_records_both_branches_of_an_incident():
     assert events[0]["type"] == "run_started" and events[-1]["type"] == "done"
     clocks = [e["_clock"] for e in events]
     assert clocks == sorted(clocks), "the simulated clock must never go backwards"
+    # a third-party outage is mitigated, never shown as resolved (not even between verify and report)
+    assert {e["status"] for e in events if e["type"] == "status"}.isdisjoint({"resolved"})
     assert any(e["type"] == "log" and e["agent"] == "Memory" for e in events), "warm-up should be recalled"
     # the reject branch starts at the human's decision and re-plans (circuit breaker before failover)
     assert reject["events"][0]["type"] == "decision" and reject["events"][0]["decision"]["decision"] == "reject"

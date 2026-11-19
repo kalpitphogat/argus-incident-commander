@@ -597,7 +597,7 @@ async def verify(state: IncidentState, runtime: Runtime[RunContext]) -> dict:
     emit("world", world=world.public_state())
     _log("Verifier", f"{status.replace('_', ' ').upper()}: {summary}", level="decision" if recovered else "warn")
     out: dict = {"verification": v, "verifications": [v], "remediation_attempts": attempts,
-                 "world_clock": world.clock, "status": "resolved" if recovered else "replanning",
+                 "world_clock": world.clock, "status": status if recovered else "replanning",
                  "timeline": [_tl(world, "verify", f"Verification: {status.replace('_', ' ')} - {summary}")]}
     if not recovered:
         out["feedback"] = [f"Verification after attempt {attempts}: {status} - {summary}"]
