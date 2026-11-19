@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/screenshots/landing-dark.jpg" alt="Argus landing page" width="100%">
+<img src="docs/screenshots/website.jpg" alt="The Argus website: the headline 'Every alert investigated. Every fix verified.' above a live replay of a recorded incident" width="100%">
 
 # Argus — AI Incident Commander
 
@@ -10,11 +10,11 @@ conclusion; risky fixes wait for a human; and nothing is called "resolved" until
 
 `LangGraph 1.2` · `LangChain 1.x` · `Claude Opus 5.5` · `FastAPI` · `SSE` · `zero-build web UI` · `runs offline`
 
-### [▶ Try the live demo](https://kalpitphogat.github.io/argus-incident-commander/)
+### [Website](https://kalpitphogat.github.io/argus-incident-commander/) &nbsp;·&nbsp; [▶ Live demo](https://kalpitphogat.github.io/argus-incident-commander/demo/)
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/kalpitphogat/argus-incident-commander)
 &nbsp; [![CI](https://github.com/kalpitphogat/argus-incident-commander/actions/workflows/ci.yml/badge.svg)](https://github.com/kalpitphogat/argus-incident-commander/actions/workflows/ci.yml)
-&nbsp; [![Deploy demo site](https://github.com/kalpitphogat/argus-incident-commander/actions/workflows/pages.yml/badge.svg)](https://github.com/kalpitphogat/argus-incident-commander/actions/workflows/pages.yml)
+&nbsp; [![Deploy website](https://github.com/kalpitphogat/argus-incident-commander/actions/workflows/pages.yml/badge.svg)](https://github.com/kalpitphogat/argus-incident-commander/actions/workflows/pages.yml)
 
 </div>
 
@@ -130,14 +130,22 @@ offline reasoner and the UI consume — so both engines see exactly the same evi
 
 ## Try it
 
-**1. Live demo (nothing to install):** [https://kalpitphogat.github.io/argus-incident-commander/](https://kalpitphogat.github.io/argus-incident-commander/)
+**1. Website and live demo (nothing to install):**
+[project website](https://kalpitphogat.github.io/argus-incident-commander/) ·
+[live demo](https://kalpitphogat.github.io/argus-incident-commander/demo/)
 
-The demo is a static site on GitHub Pages. GitHub Pages can't run Python, so every incident there is a
+Both are static and hosted on GitHub Pages. Pages can't run Python, so every incident on them is a
 **recording of the real agent**: on each push, [`pages.yml`](.github/workflows/pages.yml) runs
 `argus export-demo`, which drives the actual LangGraph through the same runner the server uses (offline
 reasoner) and records every event, tool call, finding, hypothesis and the telemetry behind the charts.
-At the approval step you pick a recorded branch: **approve**, or **reject with feedback** and watch Argus
-re-plan. Partial approvals, parameter edits and the Claude engine need the live agent (below).
+
+- **The website** (`/`) replays three of those recordings in its hero console, quotes their real outcomes
+  on the scenario cards, shows code excerpts read straight from `graph.py`, and publishes a chaos
+  benchmark that the build measures on 100 fresh incidents (`--bench`). Nothing on it is hand-typed data.
+- **The demo** (`/demo/`) is the full mission-control UI. At the approval step you pick a recorded branch:
+  **approve**, or **reject with feedback** and watch Argus re-plan. Scenario cards on the website deep-link
+  into it (`/demo/#/start/<scenario>`). Partial approvals, parameter edits and the Claude engine need the
+  live agent (below).
 
 **2. The full live agent on GitHub (Codespaces):**
 
@@ -255,7 +263,8 @@ certificates and red-herring changes. Actions really change the simulation, so v
 These numbers are on the simulator's fault families (the reasoner never sees the injected fault — only
 tool outputs). They show the pipeline is data-driven and robust to random targets and red herrings; they
 are not a claim about accuracy on real production systems. The same harness works with
-`--engine llm` to evaluate a model.
+`--engine llm` to evaluate a model. The website re-runs it (seeds 1000–1099) on every deploy and publishes
+whatever it measures, misses included.
 
 ---
 
@@ -315,11 +324,14 @@ argus-incident-commander/
 │   ├── runner.py           # background runs, replayable event log, resume
 │   ├── server.py           # FastAPI: REST + SSE + webhook
 │   ├── cli.py              # argus serve | run | scenarios | eval | export-demo
+│   ├── evaluate.py         # chaos evaluation (argus eval, CI and the published benchmark)
 │   ├── demo.py             # records real runs into the static GitHub Pages demo
+│   ├── sitegen.py          # builds the website from those recordings + the benchmark
+│   ├── site/               # website template, CSS, JS (hero replay), self-hosted fonts, images
 │   ├── studio.py           # LangGraph Studio / Platform entry point
 │   └── web/                # zero-build UI: vanilla JS modules + SVG charts, light & dark (demo.js = replay)
-├── tests/                  # 122 tests incl. a mock Anthropic API for the LLM path
-├── .github/workflows/      # ci.yml (tests, eval, Docker) · pages.yml (demo site)
+├── tests/                  # 131 tests incl. a mock Anthropic API for the LLM path
+├── .github/workflows/      # ci.yml (tests, eval, Docker) · pages.yml (website + demo)
 ├── .devcontainer/          # GitHub Codespaces
 ├── langgraph.json  Dockerfile  docker-compose.yml  pyproject.toml
 ```
@@ -337,7 +349,8 @@ escalation, autonomous mode, auto-approval of low-risk actions), incident memory
 incident after a restart from SQLite alone**, the HTTP API and SSE replay, webhook auth, and the **LLM path**
 end-to-end through `langchain-anthropic` against a local mock of the Messages API that rejects sampling
 parameters, forced tool choice, missing effort, deprecated fields, and replays without thinking blocks, and the
-demo exporter (both recorded branches, monotonic clock, site assembly).
+demo exporter (both recorded branches, monotonic clock, site assembly) and the website generator (replay
+scripts, syntax highlighting round-trips, the graph diagram matching the compiled graph, the benchmark).
 
 > **What has been verified:** all of the above, on Python 3.11 and 3.13, plus the Docker image, which CI
 > builds and smoke-tests (an incident is resolved inside the container) on every push. The LLM engine

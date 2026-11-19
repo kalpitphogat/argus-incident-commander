@@ -15,7 +15,6 @@ import asyncio
 import os
 import sys
 import time
-from collections import Counter
 from dataclasses import asdict
 
 from rich.console import Console
@@ -138,60 +137,22 @@ def _cmd_serve(args: argparse.Namespace) -> None:
 
 def _cmd_eval(args: argparse.Namespace) -> None:
     """Root-cause accuracy and recovery rate on N random chaos faults."""
-    from langgraph.checkpoint.memory import InMemorySaver
-    from langgraph.types import Command
+    from .evaluate import evaluate
 
-    from .context import RunContext
-    from .graph import build_graph, new_incident_input
-    from .sim import World, resolve
-
-    async def one(seed: int) -> tuple[dict, dict, float]:
-        spec = resolve("chaos", seed)
-        app = build_graph(checkpointer=InMemorySaver())
-        inp = new_incident_input(asdict(spec))
-        cfg = {"configurable": {"thread_id": inp["incident_id"]}, "recursion_limit": 200}
-        ctx = RunContext(reasoning=args.engine, approval_policy="never")
-        t0 = time.time()
-        payload = inp
-        while True:
-            await app.ainvoke(payload, cfg, context=ctx)
-            st = await app.aget_state(cfg)
-            if not st.interrupts:
-                break
-            payload = Command(resume={"decision": "approve", "by": "eval"})
-        return spec.fault, st.values, time.time() - t0
-
-    rows = []
-    stats = Counter()
-    by_kind: dict[str, Counter] = {}
     with console.status("Running chaos evaluation..."):
-        for seed in range(args.start, args.start + args.n):
-            fault, values, secs = asyncio.run(one(seed))
-            truth = World(resolve("chaos", seed)).fault.ground_truth()
-            top = (values.get("hypotheses") or [{}])[0]
-            rca = top.get("category") == truth.category and top.get("component") == truth.component
-            fixed = values.get("status") in ("resolved", "mitigated")
-            stats["n"] += 1
-            stats["rca"] += rca
-            stats["fixed"] += fixed
-            k = by_kind.setdefault(fault["kind"], Counter())
-            k["n"] += 1
-            k["rca"] += rca
-            k["fixed"] += fixed
-            rows.append((seed, fault, top, truth, rca, fixed, values.get("round", 0), secs))
+        stats = asyncio.run(evaluate(range(args.start, args.start + args.n), args.engine))
     t = Table(title=f"Chaos evaluation · engine={args.engine} · {stats['n']} incidents", header_style="bold")
     for col in ("fault family", "incidents", "root cause correct", "recovered"):
         t.add_column(col, justify="right" if col != "fault family" else "left")
-    for kind, c in sorted(by_kind.items()):
-        t.add_row(kind, str(c["n"]), f"{c['rca'] / c['n']:.0%}", f"{c['fixed'] / c['n']:.0%}")
-    t.add_row("[bold]all", f"[bold]{stats['n']}", f"[bold]{stats['rca'] / stats['n']:.0%}",
-              f"[bold]{stats['fixed'] / stats['n']:.0%}")
+    for f in stats["families"]:
+        t.add_row(f["kind"], str(f["n"]), f"{f['rca'] / f['n']:.0%}", f"{f['fixed'] / f['n']:.0%}")
+    n = stats["n"]
+    t.add_row("[bold]all", f"[bold]{n}", f"[bold]{stats['rca'] / n:.0%}", f"[bold]{stats['fixed'] / n:.0%}")
     console.print(t)
-    misses = [r for r in rows if not (r[4] and r[5])]
-    for seed, fault, top, truth, *_ in misses[:10]:
-        console.print(f"[red]miss[/] seed={seed} fault={fault} -> {top.get('category')}@{top.get('component')} "
-                      f"(truth {truth.category}@{truth.component})")
-    if misses and args.strict:
+    for m in stats["misses"][:10]:
+        console.print(f"[red]miss[/] seed={m['seed']} fault={m['fault']} -> {m['top']['category']}@{m['top']['component']} "
+                      f"(truth {m['truth']['category']}@{m['truth']['component']})")
+    if stats["misses"] and args.strict:
         sys.exit(1)
 
 
@@ -199,7 +160,7 @@ def _cmd_export_demo(args: argparse.Namespace) -> None:
     from .demo import main as export_main
 
     console.print(f"[bold magenta]Recording demo incidents[/] -> {args.out}")
-    export_main(args.out, args.repo_url, args.chaos)
+    export_main(args.out, args.repo_url, args.chaos, args.bench)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -232,6 +193,8 @@ def main(argv: list[str] | None = None) -> None:
     d.add_argument("--out", default="_site", help="output directory (replaced)")
     d.add_argument("--repo-url", default=None, help="link shown in the demo for running Argus yourself")
     d.add_argument("--chaos", type=int, default=4, help="number of recorded chaos incidents")
+    d.add_argument("--bench", type=int, default=100,
+                   help="chaos incidents to evaluate for the published benchmark (0 to skip)")
     d.set_defaults(fn=_cmd_export_demo)
     args = p.parse_args(argv)
     args.fn(args)

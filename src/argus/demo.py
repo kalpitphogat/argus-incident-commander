@@ -9,7 +9,9 @@ curated scenario a "previous occurrence" is resolved first, so the recorded run
 genuinely recalls it from incident memory.
 
 The web UI detects demo mode (a ``<meta name="argus-demo">`` tag) and replays
-the recordings in the browser with ``web/demo.js``.
+the recordings in the browser with ``web/demo.js``. The site around it (the landing
+page at the root, see ``sitegen.py``) is built from the same recordings plus a chaos
+benchmark that runs during the export.
 """
 
 from __future__ import annotations
@@ -37,6 +39,7 @@ WEB_DIR = Path(__file__).parent / "web"
 SETTINGS = {"reasoning": "deterministic", "approval_policy": "medium", "pace": 0.0}
 REJECT_FEEDBACK = "Not this one - it's too risky right now. Find a lower-risk option first."
 DECISION = {"approved_ids": None, "edits": {}, "comment": None}
+BENCH_START = 1000  # chaos seeds for the published benchmark (CI evaluates 500-549)
 
 
 def _iid(*parts: object) -> str:
@@ -164,26 +167,32 @@ def _graph_shape() -> dict:
             "investigator": [n.split(":", 1)[1] for n in inv.nodes if n.startswith("investigate:")]}
 
 
-async def export_site(out: Path, repo_url: str | None = None, chaos: int = 4, log=print) -> dict:
+async def export_site(out: Path, repo_url: str | None = None, chaos: int = 4, log=print, bench: int = 100) -> dict:
+    """Build the whole website: the landing page at ``out/`` and the replayable demo app at ``out/demo/``."""
+    from .evaluate import evaluate
+    from .sitegen import build_landing
+
     out = Path(out)
     if out.exists():
         shutil.rmtree(out)
-    (out / "data" / "scenarios").mkdir(parents=True)
-    (out / "data" / "chaos").mkdir(parents=True)
-    shutil.copytree(WEB_DIR, out / "static")
+    demo = out / "demo"
+    (demo / "data" / "scenarios").mkdir(parents=True)
+    (demo / "data" / "chaos").mkdir(parents=True)
+    shutil.copytree(WEB_DIR, demo / "static")
     index = (WEB_DIR / "index.html").read_text(encoding="utf-8")
-    tags = '<meta name="argus-demo" content="data/">'
+    tags = '<meta name="argus-demo" content="data/">\n  <meta name="argus-home" content="../">'
     if repo_url:
         tags += f'\n  <meta name="argus-repo" content="{repo_url}">'
-    (out / "index.html").write_text(index.replace('<meta charset="utf-8">', f'<meta charset="utf-8">\n  {tags}', 1),
-                                    encoding="utf-8")
+    (demo / "index.html").write_text(index.replace('<meta charset="utf-8">', f'<meta charset="utf-8">\n  {tags}', 1),
+                                     encoding="utf-8")
     (out / ".nojekyll").write_text("", encoding="utf-8")
 
     created = datetime.now(timezone.utc).replace(hour=14, minute=0, second=0, microsecond=0)
-    sizes = {}
+    sizes, recordings = {}, {}
     for card in CATALOG:
         data = await export_incident(card.id, card.seed, created, warmup=True)
-        path = out / "data" / "scenarios" / f"{card.id}.json"
+        recordings[card.id] = data
+        path = demo / "data" / "scenarios" / f"{card.id}.json"
         path.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
         sizes[card.id] = path.stat().st_size
         log(f"  {card.id:32s} approve={data['approve']['status']:9s} "
@@ -191,7 +200,7 @@ async def export_site(out: Path, repo_url: str | None = None, chaos: int = 4, lo
     seeds = _pick_chaos(chaos)
     for seed in seeds:
         data = await export_incident("chaos", seed, created, warmup=False)
-        path = out / "data" / "chaos" / f"{seed}.json"
+        path = demo / "data" / "chaos" / f"{seed}.json"
         path.write_text(json.dumps(data, separators=(",", ":")), encoding="utf-8")
         sizes[f"chaos-{seed}"] = path.stat().st_size
         log(f"  chaos-{seed:<26d} {chaos_fault(seed)['kind']:16s} approve={data['approve']['status']}")
@@ -206,10 +215,19 @@ async def export_site(out: Path, repo_url: str | None = None, chaos: int = 4, lo
         "graph": _graph_shape(),
         "topology": Topology().as_dict(),
     }
-    (out / "data" / "meta.json").write_text(json.dumps(meta, separators=(",", ":")), encoding="utf-8")
-    return {"incidents": len(sizes), "bytes": sum(sizes.values())}
+
+    stats = None
+    if bench > 0:  # measured now, published on the landing page
+        stats = await evaluate(range(BENCH_START, BENCH_START + bench))
+        log(f"  benchmark: {stats['rca']}/{stats['n']} root causes correct, {stats['fixed']}/{stats['n']} recovered "
+            f"(seeds {BENCH_START}-{BENCH_START + bench - 1})")
+        meta["benchmark"] = stats
+    (demo / "data" / "meta.json").write_text(json.dumps(meta, separators=(",", ":")), encoding="utf-8")
+    landing = build_landing(out, meta=meta, cards=CATALOG, recordings=recordings, bench=stats, repo_url=repo_url)
+    log(f"  landing page: {landing['reels']} replay reels, {landing['bytes'] / 1024:,.0f} KB of HTML")
+    return {"incidents": len(sizes), "bytes": sum(sizes.values()), "benchmark": stats, "landing": landing}
 
 
-def main(out: str, repo_url: str | None, chaos: int) -> None:
-    summary = asyncio.run(export_site(Path(out), repo_url, chaos))
+def main(out: str, repo_url: str | None, chaos: int, bench: int = 100) -> None:
+    summary = asyncio.run(export_site(Path(out), repo_url, chaos, bench=bench))
     print(f"Exported {summary['incidents']} recorded incidents ({summary['bytes'] / 1024:,.0f} KB) to {out}")

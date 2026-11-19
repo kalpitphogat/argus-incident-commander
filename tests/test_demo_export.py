@@ -1,8 +1,9 @@
 """The static demo is built from real recordings; make sure they are complete and self-consistent."""
 
 import json
+import re
 
-from argus import demo
+from argus import demo, sitegen
 from argus.sim import BY_ID, chaos_fault
 from conftest import ANCHOR
 
@@ -36,12 +37,31 @@ def test_chaos_picks_cover_distinct_fault_families():
 async def test_site_assembly(tmp_path, monkeypatch):
     monkeypatch.setattr(demo, "CATALOG", (BY_ID["cart-bad-release"],))
     out = tmp_path / "site"
-    summary = await demo.export_site(out, repo_url="https://github.com/example/argus", chaos=1, log=lambda *_: None)
-    assert summary["incidents"] == 2
-    index = (out / "index.html").read_text()
-    assert '<meta name="argus-demo" content="data/">' in index and 'src="static/app.js"' in index
-    assert (out / "static" / "demo.js").exists() and (out / ".nojekyll").exists()
-    meta = json.loads((out / "data" / "meta.json").read_text())
+    summary = await demo.export_site(out, repo_url="https://github.com/example/argus", chaos=1, log=lambda *_: None,
+                                     bench=2)
+    assert summary["incidents"] == 2 and summary["benchmark"]["n"] == 2
+    # the replayable app lives under /demo/ and links back to the project site
+    app = (out / "demo" / "index.html").read_text()
+    assert '<meta name="argus-demo" content="data/">' in app and 'src="static/app.js"' in app
+    assert '<meta name="argus-home" content="../">' in app
+    assert (out / "demo" / "static" / "demo.js").exists() and (out / ".nojekyll").exists()
+    meta = json.loads((out / "demo" / "data" / "meta.json").read_text())
     assert meta["health"]["demo"] is True and meta["repo_url"] == "https://github.com/example/argus"
+    assert meta["benchmark"]["n"] == 2 and meta["benchmark"]["rca"] == 2
     assert {n["id"] for n in meta["graph"]["nodes"]} >= {"dispatch", "investigate", "approval"}
-    assert (out / "data" / "scenarios" / "cart-bad-release.json").exists()
+    assert (out / "demo" / "data" / "scenarios" / "cart-bad-release.json").exists()
+    # the landing page at the root is fully rendered from real data
+    index = (out / "index.html").read_text()
+    assert not sitegen._PLACEHOLDER.search(index), "every template placeholder is rendered"
+    assert 'href="demo/#/start/cart-bad-release"' in index and 'href="demo/#/start/chaos"' in index
+    assert 'content="https://example.github.io/argus/assets/og.png"' in index
+    assert '<span class="tk-f">build_graph</span>' in index, "the code excerpt is read from graph.py"
+    assert 'data-n="investigate"' in index and 'data-e="critique-dispatch"' in index
+    raw = re.search(r'<script type="application/json" id="reels">(.*?)</script>', index, re.S).group(1)
+    assert "<" not in raw
+    reel = json.loads(raw)[0]
+    assert reel["id"] == "cart-bad-release" and reel["steps"][-1]["k"] == "done"
+    for name in ("site.css", "site.js", "icons.js", "favicon.svg", "og.png", "fonts/inter-latin-opsz-normal.woff2",
+                 "img/tour-investigation.webp"):
+        assert (out / "assets" / name).exists(), name
+    assert not sitegen._PLACEHOLDER.search((out / "404.html").read_text())

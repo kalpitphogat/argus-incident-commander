@@ -89,6 +89,14 @@ async function boot() {
     App.repo = document.querySelector('meta[name="argus-repo"]')?.content || App.demo.meta.repo_url;
     App.settings.reasoning = "deterministic";
     App.settings.approval_policy = "medium";
+    const home = document.querySelector('meta[name="argus-home"]')?.content;
+    if (home) {
+      const a = document.createElement("a");
+      a.className = "site-link";
+      a.href = home;
+      a.innerHTML = `${icon("arrow", 14)}<span>Project site</span>`;
+      document.querySelector(".topbar-right").prepend(a);
+    }
   }
   const [health, sc, shape, topo] = await Promise.all([api("/api/health"), api("/api/scenarios"), api("/api/graph"), api("/api/topology")]);
   App.health = health; App.scenarios = sc.scenarios; App.shape = shape; App.topo = topo;
@@ -120,8 +128,23 @@ function route() {
   const m = location.hash.match(/^#\/incident\/([\w-]+)/);
   if (App.es) { App.es.close(); App.es = null; }
   clearInterval(App.telemetryTimer);
+  const start = App.demo && location.hash.match(/^#\/start\/([\w-]+)$/);
+  if (start) { App.cur = null; startFromLink(start[1]); return; }
   if (m) openIncident(m[1]); else { App.cur = null; renderLanding(); }
   refreshList();
+}
+
+// Deep links from the project site (demo only): #/start/<scenario> starts that recording right away.
+async function startFromLink(scenario) {
+  $("#main").innerHTML = `<div class="card empty">${icon("loader", 16, "spin")} Starting the recorded incident…</div>`;
+  try {
+    const s = App.settings;
+    const r = await api("/api/incidents", { method: "POST", body: JSON.stringify({ scenario, reasoning: s.reasoning, approval_policy: s.approval_policy, pace: Number(s.pace) }) });
+    location.replace(`#/incident/${r.incident_id}`);
+  } catch (e) {
+    toast("bad", "Could not start the incident", e.message);
+    location.replace("#/");
+  }
 }
 
 // ------------------------------------------------------------------- landing

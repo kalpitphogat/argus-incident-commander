@@ -1,7 +1,8 @@
-name: Deploy demo site
+name: Deploy website
 
-# Records every scenario with the real agent (offline reasoner) and publishes the static
-# replay UI to GitHub Pages. Settings -> Pages -> Source must be "GitHub Actions".
+# Records every scenario with the real agent (offline reasoner), measures the chaos benchmark,
+# and publishes the website (/) and the replayable demo (/demo/) to GitHub Pages.
+# Settings -> Pages -> Source must be "GitHub Actions".
 on:
   push:
     branches: [main]
@@ -29,8 +30,8 @@ jobs:
           cache-dependency-path: pyproject.toml
       - name: Install
         run: pip install -e .
-      - name: Record demo incidents and build the site
-        run: argus export-demo --out _site --repo-url "${{ github.server_url }}/${{ github.repository }}"
+      - name: Record incidents, run the benchmark and build the site
+        run: argus export-demo --out _site --bench 100 --repo-url "${{ github.server_url }}/${{ github.repository }}"
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:

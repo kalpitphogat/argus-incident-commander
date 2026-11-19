@@ -142,6 +142,12 @@ button, input, textarea, select { font: inherit; color: inherit; }
 }
 .icon-btn:hover { color: var(--text); border-color: var(--line-strong); }
 .menu-btn { display: none; }
+.site-link {
+  display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text-2); font-size: 12.5px; white-space: nowrap;
+}
+.site-link:hover { color: var(--text); border-color: var(--line-strong); }
+.site-link svg { transform: rotate(180deg); }
 
 .rail {
   border-right: 1px solid var(--line); padding: 16px 14px; position: sticky; top: 60px;
@@ -564,6 +570,8 @@ button, input, textarea, select { font: inherit; color: inherit; }
   .main { padding: 16px 16px 48px; }
   .topbar { padding: 0 12px; }
   .pill.engine { display: none; }
+  .site-link span { display: none; }
+  .site-link { width: 34px; padding: 0; justify-content: center; }
   .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .phases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .charts { grid-template-columns: 1fr; }

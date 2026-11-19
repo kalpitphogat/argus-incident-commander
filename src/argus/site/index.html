@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Argus · The open-source AI incident commander</title>
+  <meta name="description" content="Argus investigates production incidents like a seasoned SRE team: parallel agents across metrics, logs, deploys and traces, a critic that challenges every conclusion, human approval for risky fixes, and verified recovery. Built on LangGraph and LangChain.">
+  <meta name="theme-color" content="#08090c">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Argus · Every alert investigated. Every fix verified.">
+  <meta property="og:description" content="An open-source AI incident commander built on LangGraph: parallel investigators, a critic loop, human approval and verified remediation. Watch it work a recorded incident in your browser.">
+  <meta property="og:url" content="{{site_url}}">
+  <meta property="og:image" content="{{site_url}}assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/inter-latin-opsz-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="assets/site.css">
+  <script>document.documentElement.classList.add("js")</script>
+  <script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="logo" href="#top" aria-label="Argus, back to top">{{logo:nav}}<span>Argus</span></a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#product">Product</a>
+      <a href="#how">How it works</a>
+      <a href="#scenarios">Scenarios</a>
+      <a href="#benchmark">Benchmark</a>
+      <a href="#engineering">Engineering</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="nav-gh" href="{{repo_url}}" rel="noopener">{{github:16}}<span>GitHub</span></a>
+      <a class="btn btn-light btn-sm" href="demo/">Open demo</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ============================================================ hero -->
+<section class="hero" id="top">
+  <div class="hero-bg" aria-hidden="true"><div class="hero-aurora"></div><div class="hero-grid"></div></div>
+  <div class="wrap hero-copy">
+    <a class="announce rise" style="--i:0" href="{{repo_url}}" rel="noopener">
+      <span class="announce-tag">Open source</span>
+      <span class="announce-text">LangGraph agents for on-call<span class="hide-sm">, MIT licensed</span></span>{{icon:arrow:14}}
+    </a>
+    <h1 class="display rise" style="--i:1">Every alert investigated.<br><span class="display-2">Every fix verified.</span></h1>
+    <p class="hero-sub rise" style="--i:2">Argus is an AI incident commander. Parallel agents work the metrics, logs, deploys and traces; a critic challenges every conclusion; risky fixes wait for your approval. Nothing is called resolved until the telemetry agrees.</p>
+    <div class="cta-row rise" style="--i:3">
+      <a class="btn btn-light btn-lg" href="demo/">Watch it work an incident {{icon:arrow:16}}</a>
+      <a class="btn btn-ghost btn-lg" href="{{repo_url}}" rel="noopener">{{github:17}} View the source</a>
+    </div>
+    <p class="micro rise" style="--i:4"><span>No sign-up</span><span>No API key</span><span>Replays real agent runs in your browser</span></p>
+  </div>
+
+  <div class="stage-wrap rise" style="--i:5">
+    <div class="stage" id="stage">
+      <div class="console" id="console" aria-hidden="true"></div>
+      <noscript><img class="console-fallback" src="assets/img/tour-investigation.webp" alt="The Argus console during an investigation"></noscript>
+    </div>
+    <p class="sr-only">An animated replay of a recorded incident: the alert fires, four investigators gather evidence in parallel, a critic sends them back for more, the planner proposes a fix that a human approves, and the verifier confirms the service recovered.</p>
+    <div class="reel-bar">
+      <div class="reel-tabs" id="reelTabs" role="group" aria-label="Recorded incidents"></div>
+      <p class="reel-note">{{icon:play:12}} Recorded runs of the real agent, sped up</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ stack -->
+<section class="stack" aria-label="Built with">
+  <div class="wrap">
+    <p class="stack-label">Built on an open, production-grade stack</p>
+    <ul class="stack-list">
+      <li>{{icon:graph:18}}LangGraph</li>
+      <li>{{icon:layers:18}}LangChain</li>
+      <li>{{icon:sparkle:18}}Claude</li>
+      <li>{{icon:zap:18}}FastAPI</li>
+      <li>{{icon:activity:18}}Server-Sent Events</li>
+      <li>{{icon:database:18}}SQLite checkpoints</li>
+      <li>{{icon:cpu:18}}Docker</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================ statement -->
+<section class="statement" aria-label="Why Argus">
+  <div class="wrap">
+    <p class="statement-text" id="statement">At 3 a.m. an alert is just a number on a dashboard. Argus turns it into an investigation: evidence from four specialists, hypotheses that survive a critic, a plan grounded in your runbooks, and proof from the telemetry that the fix actually worked.</p>
+  </div>
+</section>
+
+<!-- ============================================================ product (bento) -->
+<section class="section" id="product">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <span class="eyebrow">{{icon:sparkle:14}} Product</span>
+      <h2>An on-call team, compiled into a graph.</h2>
+      <p>Every role a senior engineer plays during an incident is a node in a LangGraph state machine, with explicit state, real parallelism, durable pauses for humans and loops that only end on evidence.</p>
+    </header>
+
+    <div class="bento">
+      <article class="tile t-wide reveal spot" style="--i:0">
+        <div class="tile-copy">
+          <span class="tile-k">{{icon:deps:15}} Parallel investigation</span>
+          <h3>Four specialists work the incident at once.</h3>
+          <p>The commander fans out <code>Send</code> tasks to metrics, logs, change and dependency analysts. Each runs its own tool-calling loop over the estate&rsquo;s telemetry and hands back compressed evidence, not transcripts.</p>
+        </div>
+        <div class="tile-vis lanes" aria-hidden="true">
+          <div class="lane" style="--c:var(--s1);--d:0s;--t:2.6s"><span class="lane-ic">{{icon:metrics:15}}</span><span class="lane-name">Metrics analyst</span><span class="lane-tool">get_golden_signals</span><span class="lane-track"><i></i></span><span class="lane-ok">{{icon:check:14}}</span></div>
+          <div class="lane" style="--c:var(--s2);--d:.25s;--t:3.2s"><span class="lane-ic">{{icon:logs:15}}</span><span class="lane-name">Logs analyst</span><span class="lane-tool">get_log_patterns</span><span class="lane-track"><i></i></span><span class="lane-ok">{{icon:check:14}}</span></div>
+          <div class="lane" style="--c:var(--s3);--d:.5s;--t:2.2s"><span class="lane-ic">{{icon:changes:15}}</span><span class="lane-name">Change analyst</span><span class="lane-tool">list_recent_changes</span><span class="lane-track"><i></i></span><span class="lane-ok">{{icon:check:14}}</span></div>
+          <div class="lane" style="--c:var(--s4);--d:.75s;--t:3.6s"><span class="lane-ic">{{icon:deps:15}}</span><span class="lane-name">Dependency analyst</span><span class="lane-tool">get_trace_breakdown</span><span class="lane-track"><i></i></span><span class="lane-ok">{{icon:check:14}}</span></div>
+          <div class="lanes-merge"><span>4 findings</span>{{icon:arrow:13}}<span>RCA lead</span></div>
+        </div>
+      </article>
+
+      <article class="tile t-5 reveal spot" style="--i:1">
+        <div class="tile-copy">
+          <span class="tile-k">{{icon:shield:15}} Critic loop</span>
+          <h3>A critic that says &ldquo;not yet&rdquo;.</h3>
+          <p>Hypotheses are ranked by independent corroboration. When an alternative is too close, the critic sends investigators back for the evidence that separates them.</p>
+        </div>
+        <div class="tile-vis crit" aria-hidden="true">{{tile_critic}}</div>
+      </article>
+
+      <article class="tile t-4 reveal spot" style="--i:2">
+        <div class="tile-copy">
+          <span class="tile-k">{{icon:usercheck:15}} Human in the loop</span>
+          <h3>Risky fixes wait for you.</h3>
+          <p>Anything at or above your risk policy pauses the graph with <code>interrupt()</code>. Approve, edit parameters, or reject with feedback and watch it re-plan.</p>
+        </div>
+        <div class="tile-vis approve" aria-hidden="true">
+          <div class="ap-card">
+            <div class="ap-head">{{icon:usercheck:14}} Approval required</div>
+            <div class="ap-action"><span>{{tile_approval_action}}</span><span class="risk r-{{tile_approval_risk}}">{{tile_approval_risk}} risk</span></div>
+            <div class="ap-buttons"><span class="ap-btn ghost">{{icon:x:13}} Reject</span><span class="ap-btn primary">{{icon:check:13}} Approve</span></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="tile t-4 reveal spot" style="--i:3">
+        <div class="tile-copy">
+          <span class="tile-k">{{icon:activity:15}} Closed loop</span>
+          <h3>Resolved means the SLOs say so.</h3>
+          <p>After acting, a verifier watches the telemetry. If the service has not recovered, Argus re-plans with the next runbook step instead of declaring victory.</p>
+        </div>
+        <div class="tile-vis verify" aria-hidden="true">{{tile_verify}}</div>
+      </article>
+
+      <article class="tile t-4 reveal spot" style="--i:4">
+        <div class="tile-copy">
+          <span class="tile-k">{{icon:database:15}} Incident memory</span>
+          <h3>It remembers what fixed it last time.</h3>
+          <p>Resolved incidents go into a LangGraph store. A similar alert starts with that context, and the match counts as one more independent source of evidence.</p>
+        </div>
+        <div class="tile-vis memory" aria-hidden="true">
+          <div class="mem-card"><div class="mem-top"><span class="mem-id mono">{{tile_memory_id}}</span><span class="mem-when">resolved 9 days earlier</span></div>
+            <p>{{tile_memory_text}}</p>
+            <div class="mem-match">{{icon:check:13}} matches the current alert</div></div>
+        </div>
+      </article>
+
+      <article class="tile t-5 reveal spot" style="--i:5">
+        <div class="tile-copy">
+          <span class="tile-k">{{icon:route:15}} Runbook-grounded</span>
+          <h3>Plans come from your runbooks.</h3>
+          <p>Runbooks are Markdown with typed actions. The planner retrieves them with BM25, fills parameters from the evidence and keeps the fallback ready if the fix does not hold.</p>
+        </div>
+        <div class="tile-vis runbook" aria-hidden="true">{{runbook_tile}}</div>
+      </article>
+
+      <article class="tile t-7 reveal spot" style="--i:6">
+        <div class="tile-copy">
+          <span class="tile-k">{{icon:cpu:15}} Model-optional</span>
+          <h3>Claude when you have a key. Still works when you don&rsquo;t.</h3>
+          <p>Each role runs at its own effort level, with prompt caching and server-side fallbacks. If a model call fails, only that step falls back to the deterministic reasoner and the incident keeps moving.</p>
+        </div>
+        <div class="tile-vis engines" aria-hidden="true">
+          <div class="eng eng-llm"><div class="eng-name">{{icon:sparkle:14}} {{model_label}}</div><div class="eng-chips">{{effort_chips}}</div></div>
+          <div class="eng-fallback">{{icon:arrow:13}} per-step fallback</div>
+          <div class="eng eng-det"><div class="eng-name">{{icon:cpu:14}} Deterministic reasoner</div><div class="eng-chips"><span class="chip">offline</span><span class="chip">no API key</span><span class="chip">same graph</span></div></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ how it works -->
+<section class="section how" id="how">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <span class="eyebrow">{{icon:graph:14}} How it works</span>
+      <h2>From page to postmortem.</h2>
+      <p>The loop an experienced on-call engineer runs, as an explicit graph you can read, test and extend. Scroll through one incident.</p>
+    </header>
+    <div class="how-grid">
+      <div class="how-graph-col"><div class="how-graph" id="howGraph">{{how_graph}}</div></div>
+      <ol class="how-steps" id="howSteps">
+        <li class="how-step" data-nodes="intake triage" data-edges="intake-triage">
+          <span class="how-num">01</span><h3>Triage in one step</h3>
+          <p>Golden signals for the alerting service, blast radius from the dependency graph, a severity, and similar past incidents recalled from memory.</p>
+          <div class="how-chips"><span>Intake</span><span>Triage</span></div>
+        </li>
+        <li class="how-step" data-nodes="dispatch investigate" data-edges="triage-dispatch dispatch-investigate">
+          <span class="how-num">02</span><h3>Investigate in parallel</h3>
+          <p>The commander dispatches up to four analysts with <code>Send</code>. Each is a compiled subgraph (agent, tools, summarize) with its own tool budget, running concurrently with the others.</p>
+          <div class="how-chips"><span>Dispatch</span><span>Investigators &times;4</span></div>
+        </li>
+        <li class="how-step" data-nodes="synthesize critique" data-edges="investigate-synthesize synthesize-critique critique-dispatch">
+          <span class="how-num">03</span><h3>Diagnose, then doubt it</h3>
+          <p>The RCA lead ranks hypotheses by how many independent sources support them. The critic checks the gap to the runner-up and loops back for more evidence when it is too small.</p>
+          <blockquote class="how-quote">&ldquo;{{tile_critic_quote}}&rdquo;</blockquote>
+          <div class="how-chips"><span>RCA synthesis</span><span>Critic</span><span class="loop">needs evidence &#8634;</span></div>
+        </li>
+        <li class="how-step" data-nodes="plan approval" data-edges="critique-plan plan-approval approval-plan plan-report approval-report">
+          <span class="how-num">04</span><h3>Plan from runbooks, gate on risk</h3>
+          <p>Actions come from retrieved runbooks, each with a risk level and an idempotency key. Anything above your policy waits on <code>interrupt()</code>; a rejection with feedback sends the planner back to the drawing board.</p>
+          <div class="how-chips"><span>Plan</span><span>Human approval</span><span class="loop">rejected &#8634;</span></div>
+        </li>
+        <li class="how-step" data-nodes="execute verify" data-edges="approval-execute execute-verify verify-plan">
+          <span class="how-num">05</span><h3>Act, then verify</h3>
+          <p>Approved actions run against the system. The verifier watches the SLOs for several minutes afterwards; if they have not recovered, the next runbook step is planned.</p>
+          <div class="how-chips"><span>Execute</span><span>Verify</span><span class="loop">not recovered &#8634;</span></div>
+        </li>
+        <li class="how-step" data-nodes="report" data-edges="verify-report">
+          <span class="how-num">06</span><h3>Write the postmortem</h3>
+          <p>Timeline, root cause with confidence, evidence, actions taken, key numbers and a customer status update, streamed token by token and downloadable as Markdown.</p>
+          <div class="how-chips"><span>Postmortem</span></div>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ tour -->
+<section class="section tour" id="tour">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <span class="eyebrow">{{icon:eye:14}} Mission control</span>
+      <h2>Built for the worst hour of your week.</h2>
+      <p>Everything the agent does is on screen as it happens: every tool call, every piece of evidence, every decision, and the one button that is yours to press.</p>
+    </header>
+    <div class="tour-tabs reveal" role="tablist" aria-label="Console views">
+      <button type="button" role="tab" id="tour-tab-0" aria-controls="tour-panel-0" aria-selected="true">{{icon:message:15}} Live investigation</button>
+      <button type="button" role="tab" id="tour-tab-1" aria-controls="tour-panel-1" aria-selected="false" tabindex="-1">{{icon:metrics:15}} Evidence</button>
+      <button type="button" role="tab" id="tour-tab-2" aria-controls="tour-panel-2" aria-selected="false" tabindex="-1">{{icon:usercheck:15}} Approval</button>
+      <button type="button" role="tab" id="tour-tab-3" aria-controls="tour-panel-3" aria-selected="false" tabindex="-1">{{icon:pen:15}} Postmortem</button>
+    </div>
+    <div class="tour-frame reveal">
+      <div class="tour-chrome" aria-hidden="true"><i></i><i></i><i></i><span>argus · mission control</span></div>
+      <div class="tour-panels">
+        <figure class="tour-panel" role="tabpanel" id="tour-panel-0" aria-labelledby="tour-tab-0">
+          <img src="assets/img/tour-investigation.webp" width="1920" height="1200" alt="Argus console mid-investigation: the agent graph on the left, the live activity feed with findings from each analyst on the right." loading="lazy" decoding="async">
+          <figcaption>The agent graph lights up as nodes run; the feed streams every finding, decision and tool call over SSE.</figcaption>
+        </figure>
+        <figure class="tour-panel" role="tabpanel" id="tour-panel-1" aria-labelledby="tour-tab-1" hidden>
+          <img src="assets/img/tour-evidence.webp" width="1920" height="1200" alt="Signals charts with SLO lines, alert and change markers next to ranked root-cause hypotheses with their evidence." loading="lazy" decoding="async">
+          <figcaption>Charts mark the SLO, the alert and every change; each hypothesis lists the evidence for and against it.</figcaption>
+        </figure>
+        <figure class="tour-panel" role="tabpanel" id="tour-panel-2" aria-labelledby="tour-tab-2" hidden>
+          <img src="assets/img/tour-approval.webp" width="1920" height="1200" alt="The remediation plan with a medium-risk action awaiting approval, editable parameters, and the service map highlighting the root cause." loading="lazy" decoding="async">
+          <figcaption>Approve selected actions, edit their parameters, or reject with feedback. The service map shows where it hurts.</figcaption>
+        </figure>
+        <figure class="tour-panel" role="tabpanel" id="tour-panel-3" aria-labelledby="tour-tab-3" hidden>
+          <img src="assets/img/tour-postmortem.webp" width="1920" height="1200" alt="A generated postmortem with summary, root cause, key numbers and a timeline table." loading="lazy" decoding="async">
+          <figcaption>The postmortem: timeline, root cause, key numbers and follow-ups, ready to paste into your incident tracker.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ scenarios -->
+<section class="section" id="scenarios">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <span class="eyebrow">{{icon:play:14}} Try it</span>
+      <h2>{{n_scenarios}} production failures. Pick one.</h2>
+      <p>Each scenario builds a seeded {{n_components}}-component e-commerce estate with its own telemetry, logs, traces and change history, then breaks it. The outcomes below are from the recorded runs you can replay.</p>
+    </header>
+    <div class="scards">
+      {{scenario_cards}}
+      <a class="scard scard-chaos reveal spot" href="demo/#/start/chaos">
+        <div class="scard-top"><span class="scard-ic">{{icon:dice:18}}</span><span class="scard-family">Chaos mode</span><span class="scard-diff d-hard">Unknown</span></div>
+        <h3>Inject a random fault and let it find out.</h3>
+        <p>Any of {{n_families}} fault families on a random target, with fresh telemetry. No hints, no scenario text: the agent starts from the alert alone.</p>
+        <div class="scard-foot"><span class="scard-facts">{{icon:dice:13}} Different every time you press it</span><span class="scard-go">Roll the dice {{icon:arrow:15}}</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ benchmark -->
+<section class="section bench" id="benchmark">
+  <div class="wrap bench-grid">
+    <header class="sec-head reveal">
+      <span class="eyebrow">{{icon:check:14}} Measured</span>
+      <h2>Measured on every build, not promised.</h2>
+      <p>To publish this page, the build ran Argus against {{bench_n}} randomly generated incidents across {{bench_families}} fault families. A root cause only counts if the top hypothesis names both the right component and the right failure mode.</p>
+      <div class="term reveal">
+        <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+        <pre><span class="term-p">$</span> argus eval --n {{bench_n}} <span class="term-c"># {{bench_seeds}}, offline reasoner</span>
+<span class="term-p">$</span> argus eval --n 50 --strict <span class="term-c"># CI: one miss fails the build</span></pre>
+      </div>
+    </header>
+    <div class="bench-card reveal">
+      <div class="bench-stats">
+        <div><b data-count>{{bench_rca}}</b><span>root cause correct</span></div>
+        <div><b data-count>{{bench_fixed}}</b><span>recovered or mitigated</span></div>
+        <div><b>{{bench_rounds}}</b><span>investigation rounds on average</span></div>
+      </div>
+      <div class="bench-rows">{{bench_rows}}</div>
+      <p class="bench-foot">Built {{built}} &middot; median {{bench_secs}} s per incident &middot; Argus v{{version}}</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ engineering -->
+<section class="section" id="engineering">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <span class="eyebrow">{{icon:layers:14}} Engineering</span>
+      <h2>Production patterns, not a notebook.</h2>
+      <p>The graph is small enough to read in one sitting. Everything around it is built the way an on-call tool has to be: durable, observable and safe to retry.</p>
+    </header>
+    <div class="eng-grid">
+      <div class="codecard reveal">
+        <div class="code-tabs" role="tablist" aria-label="Source excerpts">{{code_tabs}}</div>
+        {{code_panels}}
+      </div>
+      <ul class="feats reveal">
+        <li>{{icon:database:18}}<div><h4>Checkpointed state</h4><p>Every step is persisted with the SQLite saver, so an incident survives a crash or a deploy and resumes where it stopped.</p></div></li>
+        <li>{{icon:activity:18}}<div><h4>Replayable event stream</h4><p>The UI follows Server-Sent Events with sequence numbers: reconnect and catch up from any point.</p></div></li>
+        <li>{{icon:refresh:18}}<div><h4>Idempotent actions</h4><p>Each action carries an id; a retried node never applies the same fix twice.</p></div></li>
+        <li>{{icon:bell:18}}<div><h4>Alertmanager webhook</h4><p>Point Prometheus alerts at <code>/api/webhooks/alertmanager</code> and Argus opens the incident.</p></div></li>
+        <li>{{icon:lock:18}}<div><h4>Locked-down writes</h4><p>An optional bearer token guards every endpoint that changes state.</p></div></li>
+        <li>{{icon:graph:18}}<div><h4>LangGraph Studio ready</h4><p><code>langgraph.json</code> is included: open the same graph in Studio and step through it.</p></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ get started -->
+<section class="section start" id="start">
+  <div class="wrap">
+    <header class="sec-head center reveal">
+      <span class="eyebrow">{{icon:rocket:14}} Get started</span>
+      <h2>Run the full agent in minutes.</h2>
+      <p>The demo replays recordings. The real thing runs anywhere Python 3.11+ does, and reasons with Claude as soon as you set <code>ANTHROPIC_API_KEY</code>.</p>
+    </header>
+    <div class="starts">
+      <div class="start-card reveal" style="--i:0">
+        <div class="start-head"><span class="start-n">1</span><h3>One click</h3></div>
+        <p>A Codespace installs everything and opens the console on port 8000.</p>
+        <a class="btn btn-ghost" href="{{codespaces_url}}" rel="noopener">{{github:15}} Open in Codespaces</a>
+      </div>
+      <div class="start-card reveal" style="--i:1">
+        <div class="start-head"><span class="start-n">2</span><h3>Local</h3></div>
+        <div class="snippet"><pre><code>git clone {{clone_url}}
+cd {{repo_dir}} && pip install -e .
+argus serve</code></pre><button class="copy" type="button" aria-label="Copy the local install commands">{{icon:copy:14}}</button></div>
+      </div>
+      <div class="start-card reveal" style="--i:2">
+        <div class="start-head"><span class="start-n">3</span><h3>Docker</h3></div>
+        <div class="snippet"><pre><code>docker compose up --build
+# then open http://localhost:8000</code></pre><button class="copy" type="button" aria-label="Copy the Docker command">{{icon:copy:14}}</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ final cta -->
+<section class="final">
+  <div class="final-glow" aria-hidden="true"></div>
+  <div class="wrap final-in reveal">
+    {{logo:final}}
+    <h2>See it handle an incident, end to end.</h2>
+    <p>About a minute per incident. Approve its plan, or reject it with feedback and watch it find another way.</p>
+    <div class="cta-row center">
+      <a class="btn btn-light btn-lg" href="demo/">Open the live demo {{icon:arrow:16}}</a>
+      <a class="btn btn-ghost btn-lg" href="{{repo_url}}" rel="noopener">{{github:17}} Star on GitHub</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-in">
+    <div class="footer-brand">
+      <a class="logo" href="#top">{{logo:foot}}<span>Argus</span></a>
+      <p>An open-source AI incident commander built with LangGraph and LangChain.</p>
+    </div>
+    <nav class="footer-cols" aria-label="Footer">
+      <div><h4>Product</h4><a href="demo/">Live demo</a><a href="#scenarios">Scenarios</a><a href="#benchmark">Benchmark</a></div>
+      <div><h4>Project</h4><a href="{{repo_url}}" rel="noopener">Source code</a><a href="{{repo_url}}#readme" rel="noopener">Documentation</a><a href="{{repo_url}}/issues" rel="noopener">Issues</a></div>
+      <div><h4>Built with</h4><a href="https://github.com/langchain-ai/langgraph" rel="noopener">LangGraph</a><a href="https://github.com/langchain-ai/langchain" rel="noopener">LangChain</a><a href="https://fastapi.tiangolo.com/" rel="noopener">FastAPI</a></div>
+    </nav>
+  </div>
+  <div class="wrap footer-base">
+    <span>MIT License &middot; v{{version}}</span>
+    <span>Made by <a href="https://github.com/{{owner}}" rel="noopener">@{{owner}}</a></span>
+  </div>
+</footer>
+
+<script type="application/json" id="reels">{{reels_json}}</script>
+</body>
+</html>
